@@ -1,5 +1,8 @@
 import Home from "./home.js";
+import End from "./End.js"
 import {sound} from '../data/sound.js'
+import Board from "./board.js";
+
 
 
 const Game = (_ => {
@@ -19,6 +22,7 @@ const Game = (_ => {
     lives = 7;
     showInitPage()
     listeners()
+    Board.init()
   }
 
   const listeners = _ =>{
@@ -46,22 +50,50 @@ const Game = (_ => {
     if(chosenWord.includes(guess)){
       // update the quessing word(_ _ _ > a p a)
       updateGuessingWord(guess)
-      console.log(quessingWord)
+      
 
     }else{
       lives--
+
+      // render board
+      Board.setLives(lives)
     }
      render()
     // check if the game is over
-
+     isGameOver()
   }
+
+   const hasWon = _ => quessingWord.join("") === chosenWord;
+    const hasLost = _ => lives <= 0;
+
+   const isGameOver = _ =>{
+      if(hasWon()){
+        sound.win.play()
+        End.setState({
+          chosenWord,
+          result: "Win"
+        })
+        
+      }
+      if(hasLost()){
+        sound.lose.play()
+        End.setState({
+          chosenWord,
+          result : "Lose"
+        })
+      }
+   }
+  
+
+
   const render = _ =>{
     document.querySelector('.hangman__lives').innerHTML = lives
-    document.querySelector('.hangman__word').innerHTML = quessingWord.join("")
+    document.querySelector('.hangman__word').innerHTML = quessingWord.join("");
+    document.querySelector('.hangman__letters').innerHTML = createLetters();
   }
 
 const updateGuessingWord = letter =>{
-  chosenWord.split("").forEach((elem,index)=>{
+  chosenWord.split("").forEach((elem,index)=>{ 
     if(elem === letter){
       quessingWord[index] = elem;
     }
@@ -91,8 +123,9 @@ const updateGuessingWord = letter =>{
   const createLetters = _ =>{
     let markup = ``;
     letters.forEach(letter=>{
+      const isActive = isAlreadyTaken(letter) ? 'hangman__letter--active' : "" ;
       markup += `
-       <li class="hangman__letter">${letter}</li>
+       <li class="hangman__letter ${isActive}">${letter}</li>
       `
     })
     return markup;
